@@ -2,6 +2,28 @@
 title: "About me"
 ---
 
-Add some text and a figure describing myself.
+------------------------------------------------------------------------
 
-For details, see the exercise instructions. 
+![](images/IMG_3967-02.png){width="278"}
+
+------------------------------------------------------------------------
+
+### Background
+
+I'm Liza and I'm a first year non-thesis MS student in Bioinformatics. I earned my bachelor's degree in Biology from Georgia Southern University in 2023. I'm not currently conducting any research, but I'm interested in forensics, microbiology, and infectious disease.
+
+------------------------------------------------------------------------
+
+### Experience
+
+I am somewhat familiar with programming and data analysis. While my knowledge is far from extensive, I have encountered procedural and object based coding languages, and various forms of data analysis in my studies thus far. In this course I am hoping to add to and refine my current skill set in programming and data analysis.
+
+------------------------------------------------------------------------
+
+### Interests & Fun Facts
+
+My other interests include music, art, cooking, and Star Trek. Fun fact about me, I played trumpet in marching band during my undergrad. See below! :\]
+
+![](images/i-9885TNB-X3.jpg)
+
+------------------------------------------------------------------------
