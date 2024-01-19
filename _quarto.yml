@@ -24,9 +24,9 @@ website:
 
 format:
   html:
-    theme: slate
-    highlight: zenburn
-    css: styles.css
+    theme: cyborg
+    highlight: cyborg
+    css: bootstrap.css
     toc: FALSE
 
 
