@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Elizabeth Hall">
 
 <title>Liza’s Data Analysis Portfolio - R Coding Exercise</title>
 <style>
@@ -139,6 +140,12 @@ ul.task-list li input[type="checkbox"] {
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Elizabeth Hall </p>
+          </div>
+  </div>
     
   
     
@@ -147,7 +154,122 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>Placeholder file for the future R coding exercise.</p>
+<hr>
+<p><strong>load dslabs package</strong></p>
+<pre><code>library(dslabs) </code></pre>
+<p><strong>get help file for gapminder data</strong></p>
+<pre><code>help(gapminder) </code></pre>
+<p><strong>get overview of data structue</strong></p>
+<pre><code>str(gapminder) </code></pre>
+<p><strong>get data summary</strong></p>
+<pre><code>summary(gapminder) </code></pre>
+<p><strong>determine gapminder object type</strong></p>
+<pre><code>class(gapminder)</code></pre>
+<hr>
+<p><strong>assign African countries to africadata</strong></p>
+<p><sub>subset(gapminder,&nbsp;-&nbsp;creates&nbsp;a&nbsp;subset&nbsp;of&nbsp;gapminder&nbsp;dataframe</sub></p>
+<p><sub>continent&nbsp;==&nbsp;“Africa”)&nbsp;-&nbsp;filters&nbsp;data&nbsp;to&nbsp;only&nbsp;include&nbsp;African&nbsp;countries</sub></p>
+<pre><code>africadata &lt;- subset(gapminder, continent == "Africa")</code></pre>
+<hr>
+<p><strong>review data</strong></p>
+<p><sub>str(africadata)&nbsp;-&nbsp;outputs&nbsp;info&nbsp;about&nbsp;africadata</sub></p>
+<p><sub>summary(africadata)&nbsp;-&nbsp;outputs&nbsp;stats&nbsp;summary&nbsp;for&nbsp;africadata</sub></p>
+<pre><code>str(africadata) 
+summary(africadata)</code></pre>
+<hr>
+<p><strong>create new objects</strong></p>
+<p><sub>infmortality_lifeexpec&nbsp;&lt;-…&nbsp;-&nbsp;assigns&nbsp;results&nbsp;of&nbsp;operation&nbsp;to&nbsp;new&nbsp;variable</sub></p>
+<p><sub>africadata[,&nbsp;c…]&nbsp;-&nbsp;subsets&nbsp;specific&nbsp;columns&nbsp;from&nbsp;data&nbsp;frame&nbsp;africadata</sub></p>
+<p><sub>(“infant_mortality”,&nbsp;“life_expectancy”)&nbsp;-&nbsp;specifies&nbsp;columns</sub></p>
+<pre><code>infmortality_lifeexpec &lt;- africadata[, c("infant_mortality", "life_expectancy")]</code></pre>
+<p><sub>population_lifeexpec&nbsp;&lt;-…&nbsp;-&nbsp;assigns&nbsp;results&nbsp;of&nbsp;operation&nbsp;to&nbsp;new&nbsp;variable</sub></p>
+<p><sub>africadata[,&nbsp;c…]&nbsp;-&nbsp;subsets&nbsp;specific&nbsp;columns&nbsp;from&nbsp;data&nbsp;frame&nbsp;africadata</sub></p>
+<p><sub>(“population”,&nbsp;“life_expectancy”)&nbsp;-&nbsp;specifies&nbsp;columns</sub></p>
+<pre><code>population_lifeexpec &lt;- africadata[, c("population", "life_expectancy")]</code></pre>
+<hr>
+<p><strong>review data</strong></p>
+<p><sub>str(infmortality_lifeexpec)&nbsp;-&nbsp;outputs&nbsp;info&nbsp;about&nbsp;infmortality_lifeexpec</sub></p>
+<p><sub>summary(infmortality_lifeexpec)&nbsp;-&nbsp;outputs&nbsp;stats&nbsp;summary&nbsp;for&nbsp;infmortality_lifeexpec</sub></p>
+<pre><code>str(infmortality_lifeexpec) 
+summary(infmortality_lifeexpec)</code></pre>
+<p><sub>str(population_lifeexpec)&nbsp;-&nbsp;outputs&nbsp;info&nbsp;about&nbsp;population_lifeexpec</sub></p>
+<p><sub>summary(population_lifeexpec)&nbsp;-&nbsp;outputs&nbsp;stats&nbsp;summary&nbsp;for&nbsp;population_lifeexpec</sub></p>
+<pre><code>str(population_lifeexpec) 
+summary(population_lifeexpec)</code></pre>
+<hr>
+<p><strong>plot data</strong></p>
+<p><sub>plot(…)&nbsp;-&nbsp;creates&nbsp;plot</sub></p>
+<p><sub>(infmortality_lifeexpecSinfant_mortality,…)&nbsp;-&nbsp;takes&nbsp;infant_mortality&nbsp;data&nbsp;from&nbsp;variable&nbsp;infmortality_lifeexpec</sub></p>
+<p><sub>(…,infmortality_lifeexpecSlife_expectancy)&nbsp;-&nbsp;takes&nbsp;life_expectancy&nbsp;data&nbsp;from&nbsp;variable&nbsp;infmortality_lifeexpec</sub></p>
+<p><sub>main&nbsp;-&nbsp;title&nbsp;of&nbsp;graph</sub></p>
+<p><sub>xlab&nbsp;-&nbsp;x&nbsp;axis&nbsp;title</sub></p>
+<p><sub>ylab&nbsp;-&nbsp;y&nbsp;axis&nbsp;title</sub></p>
+<pre><code>plot(infmortality_lifeexpec$infant_mortality, infmortality_lifeexpec$life_expectancy, 
+  main = "Life Expectancy vs. Infant Morality", 
+  xlab = "Infant Mortality", 
+  ylab = "Life Expectancy")</code></pre>
+<p><img src="images/lifeexpecinf.png" class="img-fluid" width="445"></p>
+<p><sub>plot(…)&nbsp;-&nbsp;creates&nbsp;plot</sub></p>
+<p><sub>(log10(population_lifeexpecSpopulation),…)&nbsp;-&nbsp;takes&nbsp;population&nbsp;data&nbsp;from&nbsp;variable&nbsp;population_lifeexpec,&nbsp;log&nbsp;scales&nbsp;data</sub></p>
+<p><sub>#&nbsp;(…,infmortality_lifeexpecSlife_expectancy)&nbsp;-&nbsp;takes&nbsp;life_expectancy&nbsp;data&nbsp;from&nbsp;variable&nbsp;infmortality_lifeexpec</sub></p>
+<p><sub>#&nbsp;main&nbsp;-&nbsp;title&nbsp;of&nbsp;graph</sub></p>
+<p><sub>#&nbsp;xlab&nbsp;-&nbsp;x&nbsp;axis&nbsp;title</sub></p>
+<p><sub>#&nbsp;ylab&nbsp;-&nbsp;y&nbsp;axis&nbsp;title</sub></p>
+<pre><code>plot(log10(population_lifeexpec$population), infmortality_lifeexpec$life_expectancy, 
+  main = "Life Expectancy vs. Population", 
+  xlab = "Population (logscale)", 
+  ylab = "Life Expectancy")</code></pre>
+<p><img src="images/pop.png" class="img-fluid" width="445"></p>
+<ul>
+<li><p>there is a negative correlation between infant mortality and life expectancy.</p></li>
+<li><p>there is a positive correlation between population size and life expectancy, as the population grows people live longer.</p></li>
+</ul>
+<hr>
+<p><strong>finding missing data</strong></p>
+<p><sub>missing_data&nbsp;&lt;-…&nbsp;-&nbsp;assigns&nbsp;results&nbsp;of&nbsp;operation&nbsp;to&nbsp;new&nbsp;variable</sub></p>
+<p><sub>unique(africadataSyear[is.na(africadata$infant_mortality)])&nbsp;-&nbsp;retreives&nbsp;uniquie&nbsp;data&nbsp;from&nbsp;african&nbsp;data&nbsp;for&nbsp;year&nbsp;only&nbsp;where&nbsp;na&nbsp;is&nbsp;true</sub></p>
+<p><sub>str(missing_data)&nbsp;-&nbsp;outputs&nbsp;info&nbsp;about&nbsp;missing_data</sub></p>
+<pre><code>missing_data &lt;- unique(africadata$year[is.na(africadata$infant_mortality)]) 
+str(missing_data)</code></pre>
+<hr>
+<p><strong>single year</strong></p>
+<p><sub>creates&nbsp;a&nbsp;subset&nbsp;of&nbsp;africadata&nbsp;where&nbsp;the&nbsp;year&nbsp;=&nbsp;2000</sub></p>
+<p><sub>africadata_y2000&nbsp;&lt;-&nbsp;subset(africadata,&nbsp;year&nbsp;==&nbsp;2000)</sub></p>
+<p><sub>str(africadata_y2000)&nbsp;-&nbsp;outputs&nbsp;info&nbsp;about&nbsp;africadata_y2000</sub></p>
+<p><sub>summary(africadata_y20000)&nbsp;-&nbsp;outputs&nbsp;stats&nbsp;summary&nbsp;for&nbsp;africadata_y2000</sub></p>
+<pre><code>str(africadata_y2000) 
+summary(africadata_y2000)</code></pre>
+<hr>
+<p><strong>plotting</strong></p>
+<p><sub>this&nbsp;section&nbsp;follows&nbsp;above&nbsp;steps&nbsp;for&nbsp;variable&nbsp;creation&nbsp;and&nbsp;graphing&nbsp;but&nbsp;with&nbsp;data&nbsp;from&nbsp;africadata_y2000</sub></p>
+<pre><code>infmortality_lifeexpec2000 &lt;- africadata_y2000[, c("infant_mortality", "life_expectancy")] population_lifeexpec2000 &lt;- africadata_y2000[, c("population", "life_expectancy")]
+
+plot(infmortality_lifeexpec2000Sinfant_mortality, infmortality_lifeexpec2000$life_expectancy,
+  main = "Life Expectancy vs. Infant Morality", 
+  xlab = "Infant Mortality", 
+  ylab = "Life Expectancy", 
+  sub = "Year 2000")</code></pre>
+<p><img src="images/augh.png" class="img-fluid" width="445"></p>
+<pre><code>plot(log10(population_lifeexpec2000Spopulation), infmortality_lifeexpec2000$life_expectancy,
+  main = "Life Expectancy vs. Population", 
+  xlab = "Population (logscale)", 
+  ylab = "Life Expectancy", 
+  sub = "Year 2000")</code></pre>
+<p><img src="images/aughh2.png" class="img-fluid" width="445"></p>
+<hr>
+<p><strong>simple model fits</strong></p>
+<p><sub>fits&nbsp;model&nbsp;with&nbsp;infant&nbsp;mortality&nbsp;as&nbsp;predictor&nbsp;pulling&nbsp;data&nbsp;from&nbsp;africadata_y2000</sub></p>
+<pre><code>fit1 &lt;- lm(life_expectancy ~ infant_mortality, data = africadata_y2000) </code></pre>
+<p><sub>fits&nbsp;model&nbsp;with&nbsp;population&nbsp;size&nbsp;as&nbsp;predictor&nbsp;pulling&nbsp;data&nbsp;from&nbsp;africadata_y2000</sub></p>
+<pre><code>fit2 &lt;- lm(life_expectancy ~ population, data = africadata_y2000)</code></pre>
+<p><sub>summary(fit1)&nbsp;-&nbsp;outputs&nbsp;stats&nbsp;summary&nbsp;for&nbsp;fit&nbsp;1</sub></p>
+<p><sub>summary(fit2)&nbsp;-&nbsp;outputs&nbsp;stats&nbsp;summary&nbsp;for&nbsp;fit&nbsp;2</sub></p>
+<pre><code>summary(fit1) 
+summary(fit2)</code></pre>
+<ul>
+<li>based on the p-values for each fit, fit 1 is a better model for the data.</li>
+</ul>
+<hr>
 
 
 
