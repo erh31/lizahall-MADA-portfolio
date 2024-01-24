@@ -245,3 +245,131 @@ summary(fit2)
 -   based on the p-values for each fit, fit 1 is a better model for the data.
 
 ------------------------------------------------------------------------
+
+
+
+
+**This section is contributed by Ranni Tewfik.**
+
+This exercise uses the "us_contagious_diseases" dataset from the "dslabs" package. The dataset provides information on contagious diseases in the U.S. by state, year, and disease. There are six variables in the dataset: disease, state, year, weeks reporting, count, and population.
+
+**Part 1 - Loading and Checking Data**
+
+```{r}
+#Load the required packages
+library(dslabs)
+library(dplyr)
+library(ggplot2)
+
+#Look at help file for "us_contagious_diseases"
+help(us_contagious_diseases)
+
+#Get an overview of data structure
+str(us_contagious_diseases)
+
+#Get a summary of data
+summary(us_contagious_diseases)
+
+#Determine the type of object "us_contagious_diseases" is
+class(us_contagious_diseases)
+```
+
+
+**Part 2 - Processing Data**
+
+```{r}
+#Assign only Pertussis and Georgia in "us_contagious_diseases" to a new object
+georgia <- subset(us_contagious_diseases, disease == "Pertussis" & state == "Georgia")
+
+#Get an overview of data structure and data summary for "georgia"
+str(georgia)
+summary(georgia)
+
+#Create a new object that only contains year and count
+georgia1 <- georgia %>% select("year", "count")
+  
+#Create a new object that only contains population and count
+georgia2 <- georgia %>% select("population", "count")
+
+#Get an overview of data structure and data summary for "georgia1" and "georgia2"
+str(georgia1)
+summary(georgia1)
+
+str(georgia2)
+summary(georgia2)
+```
+
+
+**Part 3 - Plotting**
+
+```{r}
+#Plot count as a function of year
+ggplot(georgia1, aes(x = year, y = count)) + geom_point() + ggtitle("Total Number of Reported Cases of Pertussis in Georgia by Year")
+```
+
+
+There is a negative correlation between year and count to a certain point in the plot, and then there is a break in the data (no available data for 1956-1973). After that point, there seems to be no correlation between year and count.
+
+
+```{r}
+#Plot count as a function of population
+ggplot(georgia2, aes(x = log(population), y = count)) + geom_point() + ggtitle("Total Number of Reported Cases of Pertussis in Georgia by Population")
+```
+
+
+Similar to the previous plot, there is a negative correlation between population and count to a certain point. However, there is a noticeable break in the data, and there seems to be no correlation between population and count after that point. This is because no data is available for the years 1956-1973.
+
+
+**Part 4 - More Data Processing**
+
+```{r}
+#Create a new object by extracting only the data for the years after 1973 from "georgia"
+georgia3 <- georgia[(georgia$year >= 1974),]
+
+
+#Get an overview of data structure and data summary for "africadata3"
+str(georgia3)
+summary(georgia3)
+```
+
+
+**Part 5 - More Plotting**
+
+```{r}
+#Plot count as a function of year for the years after 1973
+ggplot(georgia3, aes(x = year, y = count)) + geom_point() + ggtitle("Total Number of Reported Cases of Pertussis in Georgia by Year After 1973")
+```
+
+
+There is no noticeable correlation between year and count after 1973.
+
+
+```{r}
+#Plot count as a function of population for the years after 1973
+ggplot(georgia3, aes(x = log(population), y = count)) + geom_point() + ggtitle("Total Number of Reported Cases of Pertussis in Georgia by Population After 1973")
+```
+
+
+There is no noticeable correlation between population and count after 1973.
+
+
+**Part 6 - Simple Model Fits**
+
+```{r}
+#Fit count as the outcome and year as the predictor
+fit1 <- glm(count ~ year, data = georgia3, family = poisson(link = "log"))
+summary(fit1)
+```
+
+
+After 1973, count is not significantly associated with year (p-value = 0.24).
+
+
+```{r}
+#Fit count as the outcome and population as the predictor
+fit2 <- glm(count ~ population, data = georgia3, family = poisson(link = "log"))
+summary(fit2)
+```
+
+
+After 1973, count is not significantly associated with population (p-value = 0.36).
