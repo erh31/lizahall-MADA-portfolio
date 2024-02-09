@@ -14,40 +14,37 @@ The dataset can be found here:
 
 After cleaning the dataset contains the following list of variables:
 
-- Jurisdiction of Occurrence
-- Year
-- Month
-- Number Of Days
-- All Cause
-- Natural Cause
-- Septicemia
-- Malignant Neoplasms
-- Diabetes Mellitus
-- Alzheimer Disease
-- Influenza and Pneumonia
-- Chronic Lower Respiratory Diseases
-- Other Diseases of Respiratory System
-- Nephritis/Nephrotic Syndrome and Nephrosis
-- Abnormal Findings (No Classifiable Diagnosis)
-- Diseases of Heart
-- Cerebrovascular Diseases
-- Accidents/Unintentional Injuries 
-- Motor Vehicle Accidents
-- Intentional Self Harm/Suicide 
-- Assault/Homicide 
-- Drug Overdose
-- COVID 19/Multiple Cause of Death 
-- COVID 19/Underlying Cause of Death 
----
----
+-   Jurisdiction of Occurrence
+-   Year
+-   Month
+-   Number Of Days
+-   All Cause
+-   Natural Cause
+-   Septicemia
+-   Malignant Neoplasms
+-   Diabetes Mellitus
+-   Alzheimer Disease
+-   Influenza and Pneumonia
+-   Chronic Lower Respiratory Diseases
+-   Other Diseases of Respiratory System
+-   Nephritis/Nephrotic Syndrome and Nephrosis
+-   Abnormal Findings (No Classifiable Diagnosis)
+-   Diseases of Heart
+-   Cerebrovascular Diseases
+-   Accidents/Unintentional Injuries
+-   Motor Vehicle Accidents
+-   Intentional Self Harm/Suicide
+-   Assault/Homicide
+-   Drug Overdose
+-   COVID 19/Multiple Cause of Death
+-   COVID 19/Underlying Cause of Death
+
 
 ### Cleaning the Dataset
 
 Load required package and load dataset.
 
 ```{r, echo=TRUE, message=FALSE, results='asis', background='lightgray'}
-#set working directory
-setwd("/Users/lizahall/Desktop/School/Spring 2024/Applied Data Analysis/GitHub/lizahall-MADA-portfolio")
 
 # load libraries
 library(ggplot2)
@@ -56,14 +53,14 @@ library(tidyr)
 library(scales)
 library(knitr)
 library(kableExtra)
+library(here)
 
 # Specify the file path relative to the working directory
-file_path <- "cdcdata-exercise/causeofdeathdata.csv"
+file_path <- here("cdcdata-exercise/causeofdeathdata.csv")
 
 # Load the CSV file into a data frame
 cause_of_death_data_clean <- read.csv(file_path, stringsAsFactors = FALSE)
 ```
-
 
 Creating a new variable, to prepare for the removal of redundant variables in the next step.
 
@@ -78,7 +75,6 @@ cause_of_death_data_clean <- cause_of_death_data_clean %>%
   dplyr::select(Jurisdiction.of.Occurrence, Year, Month, Number.Of.Days, everything())
 
 ```
-
 
 Removing variables which contain junk text, and also getting rid of rows which contain no data. I also chose to filter out all data from 2023, since it was incomplete.
 
@@ -95,7 +91,6 @@ cause_of_death_data_clean <- cause_of_death_data_clean %>%
   filter(Year != 2023)
 ```
 
-
 Because of how variable names were formatted within the dataset, I added some code to make them more readable. I also altered the name of one variable which was very long and not practical for display purposes.
 
 ```{r, background='lightgray'}
@@ -110,10 +105,8 @@ clean_variable_names <- function(name) {
 cause_of_death_data_clean <- cause_of_death_data_clean %>%
   rename_with(clean_variable_names, everything())
 ```
----
----
-### Visualizing the Data
 
+### Visualizing the Data
 
 Calculating percentages for the total count for each cause of death.
 
@@ -127,7 +120,6 @@ cause_counts_total <- cause_of_death_data_clean %>%
   mutate(percentage = total_count / sum(total_count) * 100) %>%
   arrange(desc(total_count))
 ```
-
 
 Creating a pie chart for the overall total for each cause of death.
 
@@ -165,7 +157,8 @@ pie_chart_total <- pie_chart_total + theme(
 # Show pie chart
 print(pie_chart_total)
 ```
----
+
+------------------------------------------------------------------------
 
 Grouping by month and cause of death, calculating total deaths per month, and calculating the percentage of total deaths each month. This is for graphing purposes.
 
@@ -189,7 +182,6 @@ total_deaths_month <- total_deaths_month %>%
   mutate(percentage = total_deaths / sum(total_deaths) * 100)
 ```
 
-
 Plot stacked bar plot for causes of death per month.
 
 ```{r, background='lightgray'}
@@ -204,7 +196,8 @@ ggplot(cause_counts_month, aes(x = Month, y = total_count/1e6, fill = `Cause of 
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.title = element_text(hjust = 0.5))
 ```
----
+
+------------------------------------------------------------------------
 
 Plot bar graph for total number of deaths per month.
 
@@ -220,7 +213,8 @@ ggplot(total_deaths_month, aes(x = Month, y = total_deaths/1e6, fill = Month)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none")
 ```
----
+
+------------------------------------------------------------------------
 
 Print table for total deaths per month.
 
@@ -234,7 +228,8 @@ kable(total_deaths_month,
   kable_styling(full_width = FALSE) %>%
   scroll_box(height = "200px")
 ```
----
+
+------------------------------------------------------------------------
 
 Grouping by year and cause of death, calculating total deaths per year, and calculating the percentage of total deaths each year. This is for graphing purposes.
 
@@ -257,7 +252,6 @@ total_deaths_year <- total_deaths_year %>%
   mutate(percentage = total_deaths / sum(total_deaths) * 100)
 ```
 
-
 Plot bar graph for total number of death per year.
 
 ```{r, background='lightgray'}
@@ -272,7 +266,8 @@ ggplot(total_deaths_year, aes(x = Year, y = total_deaths/1e6, fill = as.factor(Y
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none")
 ```
----
+
+------------------------------------------------------------------------
 
 Print table for total deaths per year.
 
@@ -286,7 +281,8 @@ kable(total_deaths_year,
   kable_styling(full_width = FALSE) %>%
   scroll_box(height = "200px")
 ```
----
+
+------------------------------------------------------------------------
 
 Grouping by month, year, and cause of death, calculating total deaths per year per month, and calculating the percentage of total deaths each year and month. This is for graphing purposes.
 
@@ -309,7 +305,6 @@ total_deaths_year_month <- total_deaths_year_month %>%
   mutate(percentage = total_deaths / sum(total_deaths) * 100)
 ```
 
-
 Plot stacked bar plot for causes of death per month per year.
 
 ```{r, background='lightgray'}
@@ -325,7 +320,8 @@ ggplot(cause_counts_year_month, aes(x = Month, y = total_count/1e6, fill = `Caus
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.title = element_text(hjust = 0.5))
 ```
----
+
+------------------------------------------------------------------------
 
 Print table for total deaths per month per year.
 
@@ -339,4 +335,270 @@ kable(total_deaths_year_month,
   kable_styling(full_width = FALSE) %>%
   scroll_box(height = "200px")
 ```
----
+
+
+
+## **This section is contributed by Chaohua Li**
+
+## Create synthetic data
+
+We create a new dataset by scrambling the data from the original dataset. That means the values in each variable are sampled from the old values without replacement. Since the year, month, and days are considered the id for each observation, these variables won't be scrambled.
+
+```{r, background='lightgray'}
+#Create data set left that contains jurisdiction, year, month and days 
+left<-cause_of_death_data_clean[,c(1:4)]
+#Create data set right that contains numbers of deaths for different causes
+right<-cause_of_death_data_clean[,-c(1:4)]
+#set seed for reproducible results
+set.seed(456)
+#define a new data frame synth that will contain scrambled values
+synth <- right
+#use a loop to scramble values without replacement in the dataset right 
+for (col in colnames(right)) {
+  #sample values without replacement for each variable
+  synth[[col]] <- sample(right[[col]], replace = FALSE)
+}
+#combine dataset left with the scrambled data right
+synth2 <- cbind(left, synth)
+
+```
+
+------------------------------------------------------------------------
+
+## Summarizes and explores the synthetic data
+
+Calculating percentages for the total count for each cause of death.
+
+```{r, background='lightgray'}
+# Calculate percentages total
+cause_counts_total <- synth2 %>%
+  select(-c(`All Cause`, Year, Month, `Number Of Days`)) %>%
+  gather(key = "Cause of Death", value = "count", -`Jurisdiction of Occurrence`) %>%
+  group_by(`Cause of Death`) %>%
+  summarize(total_count = sum(count, na.rm = TRUE)) %>%
+  mutate(percentage = total_count / sum(total_count) * 100) %>%
+  arrange(desc(total_count))
+```
+
+Recreating a pie chart for the overall total for each cause of death.
+
+```{r, background='lightgray'}
+# Create pie chart 
+pie_chart_total <- ggplot(cause_counts_total, aes(x = "", y = total_count, fill = `Cause of Death`)) +
+  geom_bar(stat = "identity") +
+  coord_polar("y", start = 0) +
+  labs(title = "Synthetic Data: Distribution of \nCauses of Death",
+       fill = "Cause of Death",
+       x = NULL, y = NULL,) +
+  theme_void() +
+  theme(legend.position = "right",
+        legend.text = element_text(size = 8),  
+        legend.title = element_text(size = 10),  
+        legend.key.size = unit(0.5, "lines"), 
+        plot.title = element_text(size = 16),  
+        plot.margin = margin(2, 6, 2, 2, "cm"),
+        legend.box.margin = margin(0, -10, 0, 0)) +  
+  guides(fill = guide_legend(
+    keywidth = unit(0.5, "lines"),  
+    label.position = "right",       
+    label.hjust = 0                 
+  )) +
+  scale_fill_discrete(labels = paste0(cause_counts_total$`Cause of Death`, " (", round(cause_counts_total$percentage), "%)"))
+
+# Adjustments
+pie_chart_total <- pie_chart_total + theme(
+  plot.margin = margin(2, 2, 2, 2, "cm"),
+  plot.title = element_text(size = 16, hjust = 0.5, margin = margin(0, 0, 10, 0)),
+  plot.caption = element_text(size = 10, hjust = 0.5, margin = margin(10, 0, 0, 0))
+)
+
+# Show pie chart
+print(pie_chart_total)
+```
+
+Because each cause of death in the synthetic dataset contains exactly the same group of values, so the totals for each cause are the same with the original dataset. 
+
+------------------------------------------------------------------------
+
+
+Grouping by month and cause of death, calculating total deaths per month, and calculating the percentage of total deaths each month. This is for graphing purposes.
+
+```{r, background='lightgray', message=FALSE}
+# Group by month and cause of death
+cause_counts_month <- synth2 %>%
+  select(-c(`All Cause`, Year, `Number Of Days`)) %>%
+  gather(key = "Cause of Death", value = "count", -`Jurisdiction of Occurrence`, -Month) %>%
+  group_by(Month, `Cause of Death`) %>%
+  summarize(total_count = sum(count, na.rm = TRUE)) %>%
+  mutate(Month = factor(month.name[Month], levels = month.name)) %>%
+  arrange(Month, desc(total_count))
+
+# Calculate total deaths for each month
+total_deaths_month <- cause_counts_month %>%
+  group_by(Month) %>%
+  summarise(total_deaths = sum(total_count))
+
+# Calculate percentage of total deaths for each month
+total_deaths_month <- total_deaths_month %>%
+  mutate(percentage = total_deaths / sum(total_deaths) * 100)
+```
+
+Plot stacked bar plot for causes of death per month.
+
+```{r, background='lightgray'}
+# Create a stacked bar plot for causes of death by month
+ggplot(cause_counts_month, aes(x = Month, y = total_count/1e6, fill = `Cause of Death`)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = function(x) paste0(format(x, big.mark = ",", scientific = FALSE), " million"), 
+                     breaks = pretty_breaks()) + 
+  labs(title = "Synthetic Data: Total Causes of \nDeath by Month",
+       x = "Month",
+       y = "Total Count") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+```
+
+This bar plot looks different from the one using original data, because the random sampling broke the association between month and deaths due to different causes. 
+
+Plot bar graph for total number of deaths per month.
+
+```{r, background='lightgray'}
+# Plot the bar graph for total number of deaths per month.
+ggplot(total_deaths_month, aes(x = Month, y = total_deaths/1e6, fill = Month)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = function(x) paste0(format(x, big.mark = ",", scientific = FALSE), " million"), 
+                     breaks = pretty_breaks()) +
+  labs(title = "Synthetic Data:Total Deaths by Month",
+       x = "Month",
+       y = "Total Deaths") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+```
+
+------------------------------------------------------------------------
+
+Print table for total deaths per month.
+
+```{r, background='lightgray'}
+# Print table of total deaths per month.
+kable(total_deaths_month, 
+      col.names = c("Month", "Total Deaths", "Percentage"),
+      format = "html",
+      digits = 2,
+      caption = "Synthetic Data:Total Deaths and Percentage by Month") %>%
+  kable_styling(full_width = FALSE) %>%
+  scroll_box(height = "200px")
+```
+
+Differences in the distribution of deaths by month between original and synthetic data are also reflected in this table. 
+
+------------------------------------------------------------------------
+
+Grouping by year and cause of death, calculating total deaths per year, and calculating the percentage of total deaths each year. This is for graphing purposes.
+
+```{r, background='lightgray', message=FALSE}
+# Group by year and cause of death
+cause_counts_year <- synth2 %>%
+  select(-c(`All Cause`, Month, `Number Of Days`)) %>%
+  gather(key = "Cause of Death", value = "count", -`Jurisdiction of Occurrence`, -Year) %>%
+  group_by(Year, `Cause of Death`) %>%
+  summarize(total_count = sum(count, na.rm = TRUE)) %>%
+  arrange(Year, desc(total_count))
+
+# Calculate total deaths for each year
+total_deaths_year <- cause_counts_year %>%
+  group_by(Year) %>%
+  summarise(total_deaths = sum(total_count))
+
+# Calculate percentage of total deaths for each year
+total_deaths_year <- total_deaths_year %>%
+  mutate(percentage = total_deaths / sum(total_deaths) * 100)
+```
+
+Plot bar graph for total number of death per year.
+
+```{r, background='lightgray'}
+# Plot bar graph for total number of deaths per year.
+ggplot(total_deaths_year, aes(x = Year, y = total_deaths/1e6, fill = as.factor(Year))) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = function(x) paste0(format(x, big.mark = ",", scientific = FALSE), " million"), 
+                     breaks = pretty_breaks()) +
+  labs(title = "Synthetic Data:Total Deaths by Year",
+       x = "Year",
+       y = "Total Deaths") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+```
+
+The distribution of deaths by year using synthetic data is very similar to that in the original data. But the table below does show the numbers are slightly different from the original results. 
+
+------------------------------------------------------------------------
+
+Print table for total deaths per year.
+
+```{r, background='lightgray'}
+# Print table for total deaths per year.
+kable(total_deaths_year, 
+      col.names = c("Year", "Total Deaths", "Percentage"),
+      format = "html",
+      digits = 2,
+      caption = "Synthetic Data:Total Deaths and Percentage by Year") %>%
+  kable_styling(full_width = FALSE) %>%
+  scroll_box(height = "200px")
+```
+
+------------------------------------------------------------------------
+
+Grouping by month, year, and cause of death, calculating total deaths per year per month, and calculating the percentage of total deaths each year and month. This is for graphing purposes.
+
+```{r, background='lightgray', message=FALSE}
+# Group by year, month, and cause of death
+cause_counts_year_month <- synth2 %>%
+  select(-c(`All Cause`, `Number Of Days`)) %>%
+  gather(key = "Cause of Death", value = "count", -`Jurisdiction of Occurrence`, -Year, -Month) %>%
+  group_by(Year, Month, `Cause of Death`) %>%
+  summarize(total_count = sum(count, na.rm = TRUE)) %>%
+  arrange(Year, Month, desc(total_count))
+
+# Calculate total deaths for each year and month
+total_deaths_year_month <- cause_counts_year_month %>%
+  group_by(Year, Month) %>%
+  summarise(total_deaths = sum(total_count))
+
+# Calculate percentage of total deaths for each year and month
+total_deaths_year_month <- total_deaths_year_month %>%
+  mutate(percentage = total_deaths / sum(total_deaths) * 100)
+```
+
+Plot stacked bar plot for causes of death per month per year.
+
+```{r, background='lightgray'}
+# Create a stacked bar plot for causes of death by month and year
+ggplot(cause_counts_year_month, aes(x = Month, y = total_count/1e6, fill = `Cause of Death`)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~Year) +  # facet by year
+  scale_y_continuous(labels = function(x) paste0(format(x, big.mark = ",", scientific = FALSE), " million"), 
+                     breaks = pretty_breaks()) + # format y-axis labels
+  labs(title = "Synthetic Data:Total Causes of Death \nby Month & Year",
+       x = "Month",
+       y = "Total Count") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+```
+
+The distribution of deaths by year and month using synthetic data looks different from the original results. This is due to the random sampling process which broke the original pattern.
+
+------------------------------------------------------------------------
+
+Print table for total deaths per month per year.
+
+```{r, background='lightgray'}
+# Print table for total deaths per month per year.
+kable(total_deaths_year_month, 
+      col.names = c("Year", "Month", "Total Deaths", "Percentage"),
+      format = "html",
+      digits = 2,
+      caption = "Synthetic Data:Total Deaths and Percentage \nby Year and Month") %>%
+  kable_styling(full_width = FALSE) %>%
+  scroll_box(height = "600px")
+```
