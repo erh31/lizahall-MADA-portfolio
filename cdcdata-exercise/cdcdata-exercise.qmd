@@ -659,12 +659,13 @@ library(tidyr)
 library(scales)
 library(knitr)
 library(kableExtra)
+library(here)
 
 # Specify the file path relative to the working directory
 file_path <- "cdcdata-exercise/causeofdeathdata.csv"
 
 # Load the CSV file into a data frame
-cause_of_death_data_clean <- read.csv(file_path, stringsAsFactors = FALSE)
+cause_of_death_data_clean <- read.csv(here("cdcdata-exercise", "causeofdeathdata.csv"), stringsAsFactors = FALSE)
 ```
 
 
