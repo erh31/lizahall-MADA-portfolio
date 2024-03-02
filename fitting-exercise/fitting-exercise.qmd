@@ -1,0 +1,498 @@
+---
+title: "Fitting Exercise"
+author: "Elizabeth Hall"
+output: html_document
+---
+
+## Importing Data  
+
+\
+The first step was to import and read the data from the csv file.
+
+First, the required libraries 'here' and 'readr' were loaded.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Load here and readr for data reading
+library(here)
+library(readr)
+```
+
+\
+
+Next, the data was read from the csv file.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Use the here function to specify the file path
+data_path <- here("/Users/lizahall/Desktop/School/Spring 2024/Applied Data Analysis/GitHub/lizahall-MADA-portfolio/fitting-exercise/Mavoglurant_A2121_nmpk.csv")
+
+# Load the data
+data <- read_csv(data_path)
+```
+
+\
+Printing the first few rows of the dataset, to make sure it loaded correctly.
+
+```{r, background='lightgray'}
+# Inspect the first few rows of the data to ensure it's loaded correctly
+head(data)
+```
+
+\
+Loading in ggplot2 for plotting.
+
+Plotting 'DV' as a function of time, stratified by 'DOSE' with 'ID' as a grouping factor. This provides a quick visual overview of the data.
+
+```{r, background='lightgray'}
+# Load ggplot2 for plotting
+library(ggplot2)
+
+# Define colors
+colors <- c("#5c88da", "#84bd00", "#ffcd00")
+
+ggplot(data, aes(x = TIME, y = DV, group = ID, color = as.factor(DOSE))) +
+  geom_line() +
+  scale_color_manual(values = colors) +  
+  facet_wrap(~ DOSE, scales = "free", ncol = 1) +  
+  labs(title = "DV vs. Time Stratified by DOSE", x = "Time", y = "DV", color = "DOSE") +
+  theme_minimal()
+```
+
+\
+\
+
+## Data Processing
+
+Loading in dplyr for data manipulation.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Load dplyr for data malipulation
+library(dplyr)
+```
+
+\
+First, data is filtered to keep only rows where 'OOC' is equal to 1.
+
+Then the first few rows of the dataframe are printed, to ensure that the data was filtered correctly.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Filter the DataFrame to keep only rows where OCC equals 1
+data1 <- subset(data, OCC == 1)
+
+# Print the first few lines of the filtered dataframe
+print(head(data1))
+```
+
+\
+Next, any observations where 'TIME' equals 0 are filtered out.
+
+Then the sum of the DV variables are computed and assigned to variable Y.
+
+Then a dataframe is created, which only contains observations where 'TIME' equals 0.
+
+Finally, 'inner_join' is used to combine the dataframes.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Filter out observations where TIME is not equal to 0
+data_filtered <- filter(data1, TIME != 0)
+
+# Compute the sum of the DV variable for each individual
+Y <- data_filtered %>%
+  group_by(ID) %>%
+  summarize(Y = sum(DV))
+
+# Create a dataframe containing only the observations where TIME equals 0
+data_TIME_0 <- filter(data1, TIME == 0)
+
+# Combine the two dataframes using the appropriate join function
+combined_data <- inner_join(Y, data_TIME_0, by = "ID")
+```
+
+\
+Next, 'RACE' and 'SEX' are converted to factor variables.
+
+Then variables 'Y', 'DOSE', 'AGE', 'SEX', 'RACE', 'WT', and 'HT' are assigned to `selected_data`.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Convert RACE and SEX to factor variables
+combined_data <- combined_data %>%
+  mutate(RACE = factor(RACE),
+         SEX = factor(SEX))
+
+# Select only the desired variables
+selected_data <- combined_data %>%
+  select(Y, DOSE, AGE, SEX, RACE, WT, HT)
+```
+
+\
+\
+
+## Exploratory Data Analysis
+
+Loading in packages for data exploration and visualization.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Load tidyr, knitr, ggsci, and corrplot for data exploration and visualization
+library(tidyr)
+library(knitr)
+library(ggsci)
+library(corrplot)
+```
+
+\
+To get a better idea of the variables, summary table is printed.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Summary table for all variables
+summary_data <- summary(selected_data[, c("Y", "DOSE", "AGE", "SEX", "RACE", "WT", "HT")])
+print(summary_data)
+```
+
+\
+Creating a scatterplot for 'Y' vs 'DOSE'.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Define colors
+colors <- c("#cc1c00", "#5c88da", "#84bd00", "#ffcd00")
+
+# Create the scatterplot of Y vs. DOSE 
+ggplot(selected_data, aes(x = DOSE, y = Y)) +
+  geom_point(aes(color = DOSE), alpha = 0.6, size = 3) +
+  scale_color_gradientn(colors = colors) +
+  labs(title = "Y vs. DOSE", x = "Dose", y = "Y") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 20),
+        axis.title.x = element_text(face="bold", size = 14),
+        axis.title.y = element_text(face="bold", size = 14),
+        legend.title = element_blank())
+```
+
+\
+Creating a scatterplot for 'Y' vs 'AGE'.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Scatterplot of Y vs. AGE
+ggplot(selected_data, aes(x = AGE, y = Y)) +
+  geom_point(aes(color = AGE), alpha = 0.6, size = 3) +
+  scale_color_gradient(low = "#5c88da", high = "#ffcd00") + 
+  labs(title = "Y vs. AGE", x = "Age", y = "Y") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 20),
+        axis.title.x = element_text(face="bold", size = 14),
+        axis.title.y = element_text(face="bold", size = 14),
+        legend.title = element_text(size = 14))
+```
+
+\
+Creating a boxplot for 'Y' vs 'SEX'.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Boxplot of Y vs. SEX 
+ggplot(selected_data, aes(x = as.factor(SEX), y = Y, fill = as.factor(SEX))) +
+  geom_boxplot() +
+  scale_fill_startrek() + 
+  labs(title = "Y vs. SEX", x = "Sex", y = "Y") +
+  theme_minimal() +
+  theme(legend.title = element_blank(), 
+        plot.title = element_text(hjust = 0.5),
+        axis.title.x = element_text(face="bold"),
+        axis.title.y = element_text(face="bold"))
+```
+
+\
+Creating a boxplot for 'Y' vs 'RACE'.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Boxplot of Y vs. RACE
+ggplot(selected_data, aes(x = as.factor(RACE), y = Y, fill = as.factor(RACE))) +
+  geom_boxplot() +
+  scale_fill_startrek() + 
+  labs(title = "Y vs. RACE", x = "Race", y = "Y") +
+  theme_minimal() +
+  theme(legend.title = element_blank(), 
+        plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        axis.title.x = element_text(face="bold"),
+        axis.title.y = element_text(face="bold"))
+```
+
+\
+Creating distribution curves for 'WT' and 'HT'.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Distribution of WT with density curve
+ggplot(selected_data, aes(x = WT)) + 
+  geom_histogram(aes(y = ..density..), binwidth = 1, fill = "#5c88da", color = "black") + 
+  geom_density(alpha = 0.5, color = "black") + 
+  theme_minimal() + 
+  ggtitle("Distribution of WT")
+
+# Distribution of HT with density curve
+ggplot(data, aes(x = HT)) + 
+  geom_histogram(aes(y = ..density..), fill = "#ffcd00", color = "black") + 
+  geom_density(alpha = 0.5, color = "black") + 
+  theme_minimal() + 
+  ggtitle("Distribution of HT")
+```
+
+\
+Plotting correlation matrix.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Convert variables_of_interest to numeric
+variables_of_interest <- as.data.frame(sapply(selected_data, as.numeric))
+
+# Calculate correlation matrix for the variables of interest
+corr_matrix <- cor(variables_of_interest, use = "complete.obs")
+
+# Your custom colors
+my_colors <- colorRampPalette(c("#5c88da", "white", "#ffcd00"))(200) 
+
+# Plotting the correlation matrix with custom colors
+corrplot(corr_matrix, method = "color", col = my_colors,
+         tl.col="black", tl.srt=45) # Text label color and rotation
+```
+
+\
+\
+
+## Model Fitting
+
+Loading in tidymodels for model fitting.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Load tidymodels for model fitting 
+library(tidymodels)
+
+```
+
+\
+
+#### Linear Models
+
+Models were fitted to the continuous outcome 'Y'.\
+
+Defining the linear model specification.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Define the model specification
+linear_spec <- linear_reg() %>% 
+  set_engine("lm") %>% 
+  set_mode("regression")
+```
+
+\
+Fitting model with 'DOSE' as the predictor.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Model with DOSE as predictor
+# Fit the model
+model_dose <- linear_spec %>% 
+  fit(Y ~ DOSE, data = selected_data)
+
+# Summarize the model
+summary(model_dose$fit)
+```
+
+\
+Calculating RMSE and R-squared for 'DOSE' model.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# RMSE and R-squared for model with DOSE
+rmse_dose <- model_dose %>% 
+  predict(new_data = selected_data) %>% 
+  bind_cols(selected_data) %>% 
+  metrics(truth = Y, estimate = .pred) %>% 
+  filter(.metric %in% c("rmse", "rsq"))
+
+print(rmse_dose)
+```
+
+\
+Fitting model with all predictors.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Model with all predictors
+# Fit the model
+model_all <- linear_spec %>% 
+  fit(Y ~ ., data = selected_data)
+
+# Summarize the model
+summary(model_all$fit)
+```
+
+\
+Calculating RMSE and R-squared for all predictors model.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# RMSE and R-squared for model with all predictors
+rmse_all <- model_all %>% 
+  predict(new_data = selected_data) %>% 
+  bind_cols(selected_data) %>% 
+  metrics(truth = Y, estimate = .pred) %>% 
+  filter(.metric %in% c("rmse", "rsq"))
+
+print(rmse_all)
+```
+
+\
+The lower RMSE and MAE values for the all predictors model compared to the 'DOSE' model indicate better accuracy in predicting Y when all predictors are considered.
+
+The higher R-squared value for the all predictors model suggests that it does a better job in explaining variance in the data.\
+\
+
+#### Logistic Models
+
+Models were fitted to the categorical/binary outcome 'SEX'.\
+Defining the logistic model specification.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Define the model specification
+logistic_spec <- logistic_reg() %>% 
+  set_engine("glm") %>% 
+  set_mode("classification")
+```
+
+\
+Fitting model with 'DOSE' as the predictor.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Fit the model
+logistic_dose <- logistic_spec %>% 
+  fit(SEX ~ DOSE, data = selected_data)
+
+print(logistic_dose)
+```
+
+\
+Calculating ROC-AUC for 'DOSE' model.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Accuracy and ROC-AUC for logistic model with DOSE
+acc_dose <- logistic_dose %>% 
+  predict(new_data = selected_data, type = "prob") %>% 
+  bind_cols(selected_data) %>% 
+  roc_auc(truth = SEX, .pred_1) 
+
+print(acc_dose)
+```
+
+\
+Fitting model with 'DOSE' as the predictor.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Model with all predictors
+# Fit the model
+logistic_all <- logistic_spec %>% 
+  fit(SEX ~ ., data = selected_data)
+
+print(logistic_all)
+```
+
+\
+Calculating ROC-AUC for all predictors model.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Accuracy and ROC-AUC for logistic model with all predictors
+acc_all <- logistic_all %>% 
+  predict(new_data = selected_data, type = "prob") %>% 
+  bind_cols(selected_data) %>% 
+  roc_auc(truth = SEX, .pred_1)
+
+print(acc_all)
+```
+
+\
+Both models show a significant amount of error (RMSE) and a moderate amount of variance (R-squared).
+
+However, including all predictors marginally improves both the RMSE and R-squared values, indicating a better predictive fit.
+
+\
+\
+
+## K-Nearest Neighbor
+
+Loading in kknn for nearest neighbor.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Load kknn for nearest neighbor
+library(kknn)
+
+```
+
+\
+K-Nearest neighbors model for continuous outcome 'Y'.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+# K-Nearest Neighbors Model for Continuous Outcome (Y)
+# Define KNN model specification for regression
+knn_spec_regression <- nearest_neighbor(neighbors = 5) %>%  # You can adjust the number of neighbors
+  set_engine("kknn") %>% 
+  set_mode("regression")
+
+# Fit KNN model for Y with DOSE as the predictor
+knn_fit_Y_DOSE <- knn_spec_regression %>% 
+  fit(Y ~ DOSE, data = selected_data)
+
+# Fit KNN model for Y with all predictors
+knn_fit_Y_all <- knn_spec_regression %>% 
+  fit(Y ~ ., data = selected_data)
+
+# Assuming you have a test dataset or you split your selected_data into training and testing
+set.seed(123)  # For reproducibility
+data_split <- initial_split(selected_data, prop = 0.8)
+train_data <- training(data_split)
+test_data <- testing(data_split)
+
+# Predictions
+predictions_Y_DOSE <- predict(knn_fit_Y_DOSE, new_data = test_data) %>% 
+  bind_cols(test_data)
+
+predictions_Y_all <- predict(knn_fit_Y_all, new_data = test_data) %>% 
+  bind_cols(test_data)
+
+# Compute RMSE and R-squared for both models
+metrics_Y_DOSE <- metrics(predictions_Y_DOSE, truth = Y, estimate = .pred)
+metrics_Y_all <- metrics(predictions_Y_all, truth = Y, estimate = .pred)
+
+cat("Y DOSE\n")
+print(metrics_Y_DOSE)
+cat("\n")
+cat("Y All Predictors\n")
+print(metrics_Y_all)
+```
+
+\
+K-Nearest neighbors model for categorical outcome SEX.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+# K-Nearest Neighbors Model for Categorical Outcome (SEX)
+# Define KNN model specification for classification
+knn_spec_classification <- nearest_neighbor(neighbors = 5) %>%  # Adjust neighbors as needed
+  set_engine("kknn") %>% 
+  set_mode("classification")
+
+# Fit KNN model for SEX with DOSE as the predictor
+knn_fit_SEX_DOSE <- knn_spec_classification %>% 
+  fit(SEX ~ DOSE, data = selected_data)
+
+# Fit KNN model for SEX with all predictors
+knn_fit_SEX_all <- knn_spec_classification %>% 
+  fit(SEX ~ ., data = selected_data)
+
+# Predictions
+predictions_SEX_DOSE <- predict(knn_fit_SEX_DOSE, new_data = test_data, type = "prob") %>% 
+  bind_cols(test_data)
+
+predictions_SEX_all <- predict(knn_fit_SEX_all, new_data = test_data, type = "prob") %>% 
+  bind_cols(test_data)
+
+# Compute Accuracy and ROC-AUC for both models
+metrics_SEX_DOSE <- roc_auc(predictions_SEX_DOSE, truth = SEX, .pred_1) # Adjust based on factor levels
+metrics_SEX_all <- roc_auc(predictions_SEX_all, truth = SEX, .pred_1)
+
+cat("SEX DOSE\n")
+print(metrics_SEX_DOSE)
+cat("\n")
+cat("SEX All Predictors\n")
+print(metrics_SEX_all)
+```

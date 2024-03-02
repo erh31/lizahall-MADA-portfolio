@@ -20,6 +20,8 @@ website:
             file: cdcdata-exercise/cdcdata-exercise.qmd
           - text: "Presentation Exercise"
             file: presentation-exercise/presentation-exercise.qmd
+          - text: "Fitting Exercise"
+            file: fitting-exercise/fitting-exercise.qmd
           - text: "Tidy Tuesday Exercise"
             file: tidytuesday-exercise/tidytuesday-exercise.qmd
     right:
