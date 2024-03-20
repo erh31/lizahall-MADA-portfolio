@@ -5,7 +5,7 @@ library(readr)
 
 # Use the here function to specify the file path
 # Assuming the filename is 'Mavoglurant_A2121_nmpk.csv' and it's located in the current working directory
-data_path <- here("/Users/lizahall/Desktop/School/Spring 2024/Applied Data Analysis/GitHub/lizahall-MADA-portfolio/fitting-exercise/Mavoglurant_A2121_nmpk.csv")
+data_path <- here("fitting-exercise", "Mavoglurant_A2121_nmpk.csv")
 
 # Load the data
 data <- read_csv(data_path)
@@ -32,13 +32,13 @@ ggplot(data, aes(x = TIME, y = DV, group = ID, color = as.factor(DOSE))) +
 library(dplyr)
 
 # Filter the DataFrame to keep only rows where OCC equals 1
-data1 <- subset(data, OCC == 1)
+data_subset <- subset(data, OCC == 1)
 
 # Print the first few lines of the filtered dataframe
-print(head(data1))
+print(head(data_subset))
 
 # Filter out observations where TIME is not equal to 0
-data_filtered <- filter(data1, TIME != 0)
+data_filtered <- filter(data_subset, TIME != 0)
 
 # Compute the sum of the DV variable for each individual
 Y <- data_filtered %>%
@@ -46,7 +46,7 @@ Y <- data_filtered %>%
   summarize(Y = sum(DV))
 
 # Create a dataframe containing only the observations where TIME equals 0
-data_TIME_0 <- filter(data1, TIME == 0)
+data_TIME_0 <- filter(data_subset, TIME == 0)
 
 # Combine the two dataframes using the appropriate join function
 combined_data <- inner_join(Y, data_TIME_0, by = "ID")
@@ -309,5 +309,161 @@ print(acc_dose)
 print(acc_all)
 print(rmse_dose)
 print(rmse_all)
+
+# =============================================================================
+
+# -------------------------
+# START OF EXERCISE 10
+# -------------------------
+
+
+# Load required libraries
+library(dplyr)
+
+# Assign seed value to `rngseed`
+rngseed = 1234
+
+# Remove RACE variable from data
+data_pt10 <- select(selected_data, -RACE)
+
+# Set random seed
+set.seed(rngseed)
+
+# Splitting the data
+data_split <- initial_split(data_pt10, prop = 3/4)
+
+# Create data frames for the training and test sets
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+
+# Load required libraries
+library(tidymodels)
+
+# Fit linear models with Y as outcome
+lin_mod <- linear_reg() %>% set_engine("lm")
+linfit1 <- lin_mod %>% fit(Y ~ DOSE, data = train_data) # only DOSE as predictor
+linfit2 <- lin_mod %>% fit(Y ~ ., data = train_data) # all predictors
+
+# Compute the RMSE and R squared for DOSE
+metrics_1 <- linfit1 %>% 
+  predict(train_data) %>% 
+  bind_cols(train_data) %>% 
+  metrics(truth = Y, estimate = .pred)
+
+# Compute the RMSE and R squared for all predictors model 
+metrics_2 <- linfit2 %>% 
+  predict(train_data) %>% 
+  bind_cols(train_data) %>% 
+  metrics(truth = Y, estimate = .pred)
+
+# Print the results
+print(metrics_1)
+print(metrics_2)
+
+# Fit null model
+nullfit <- lin_mod %>% fit(Y ~ 1, data = train_data)
+
+# Compute the RMSE and R squared for the null model
+metrics_null <- nullfit %>%
+  predict(train_data) %>%
+  bind_cols(train_data) %>%
+  metrics(truth = Y, estimate = .pred)
+
+# Print the results for the null model
+print(metrics_null)
+
+
+# Load required libraries
+library(tidymodels)
+library(dplyr)
+
+# Set the seed for reproducibility
+set.seed(rngseed) 
+
+# Create CV Folds 
+cv_folds <- vfold_cv(train_data, v = 10, strata = NULL) 
+
+
+# Creating workflows
+
+# DOSE model
+workflow_dose <- workflow() %>%
+  add_model(lin_mod) %>%
+  add_formula(Y ~ DOSE)
+
+# All predictors model
+workflow_all <- workflow() %>%
+  add_model(lin_mod) %>%
+  add_formula(Y ~ .)
+
+
+# Fitting the models with resampling 
+
+# DOSE model
+cv_results_dose <- fit_resamples(
+  workflow_dose,
+  cv_folds,
+  metrics = metric_set(rmse, rsq)
+)
+
+# All predictors model
+cv_results_all <- fit_resamples(
+  workflow_all,
+  cv_folds,
+  metrics = metric_set(rmse, rsq)
+)
+
+
+
+# Summarize model results
+collect_metrics(cv_results_dose)
+collect_metrics(cv_results_all)
+
+# What did and didn't change???
+
+# Setting a new seed 
+
+# Set the seed for reproducibility
+set.seed(042) 
+
+# Create CV Folds 
+cv_folds <- vfold_cv(train_data, v = 10, strata = NULL) 
+
+
+# Creating workflows
+
+# DOSE model
+workflow_dose <- workflow() %>%
+  add_model(lin_mod) %>%
+  add_formula(Y ~ DOSE)
+
+# All predictors model
+workflow_all <- workflow() %>%
+  add_model(lin_mod) %>%
+  add_formula(Y ~ .)
+
+
+# Fitting the models with resampling 
+
+# DOSE model
+cv_results_dose <- fit_resamples(
+  workflow_dose,
+  cv_folds,
+  metrics = metric_set(rmse, rsq)
+)
+
+# All predictors model
+cv_results_all <- fit_resamples(
+  workflow_all,
+  cv_folds,
+  metrics = metric_set(rmse, rsq)
+)
+
+
+
+# Summarize model results
+collect_metrics(cv_results_dose)
+collect_metrics(cv_results_all)
+
 
 

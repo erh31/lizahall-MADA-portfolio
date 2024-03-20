@@ -4,6 +4,10 @@ author: "Elizabeth Hall"
 output: html_document
 ---
 
+# Exercise 8
+
+---
+
 ## Importing Data  
 
 \
@@ -23,7 +27,7 @@ Next, the data was read from the csv file.
 
 ```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Use the here function to specify the file path
-data_path <- here("/Users/lizahall/Desktop/School/Spring 2024/Applied Data Analysis/GitHub/lizahall-MADA-portfolio/fitting-exercise/Mavoglurant_A2121_nmpk.csv")
+data_path <- here("fitting-exercise", "Mavoglurant_A2121_nmpk.csv")
 
 # Load the data
 data <- read_csv(data_path)
@@ -496,3 +500,326 @@ cat("\n")
 cat("SEX All Predictors\n")
 print(metrics_SEX_all)
 ```
+
+\
+
+---
+
+---
+
+# Exercise 10
+
+## Setup
+
+Load nessecary libraries and assign random seed value. 
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Load required libraries
+library(dplyr)
+
+# Assign seed value to `rngseed`
+rngseed = 1234
+```
+
+\
+Remove variable RACE from dataset, and set random seed.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Remove RACE variable from data
+data_pt10 <- select(selected_data, -RACE)
+
+# Set random seed
+set.seed(rngseed)
+```
+
+\
+
+#### Data Splitting
+
+Split data into training data and test data. 
+Data is split at a 3 to 4 ratio, with 75 training data and .25 test data.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Splitting the data
+data_split <- initial_split(data_pt10, prop = 3/4)
+
+# Create data frames for the training and test sets
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+```
+
+\
+
+## Model Fitting
+
+\
+
+Load required libraries and set seed for reproducability.
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Load required libraries
+library(tidymodels)
+library(dplyr)
+```
+
+\
+Fit linear models with Y as the outcome.
+\
+linfit1 uses DOSE as the predictor.
+linfit2 uses all predictors. 
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Fit linear models with Y as outcome
+lin_mod <- linear_reg() %>% set_engine("lm")
+linfit1 <- lin_mod %>% fit(Y ~ DOSE, data = train_data) # only DOSE as predictor
+linfit2 <- lin_mod %>% fit(Y ~ ., data = train_data) # all predictors
+```
+
+\
+Computing RMSE and R-squared scores for both models.
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+# Compute the RMSE and R squared for DOSE
+metrics_1 <- linfit1 %>% 
+  predict(train_data) %>% 
+  bind_cols(train_data) %>% 
+  metrics(truth = Y, estimate = .pred)
+
+# Compute the RMSE and R squared for all predictors model 
+metrics_2 <- linfit2 %>% 
+  predict(train_data) %>% 
+  bind_cols(train_data) %>% 
+  metrics(truth = Y, estimate = .pred)
+
+# Print the results
+cat("DOSE Model\n")
+print(metrics_1)
+cat("\n")
+cat("All Predictors Model\n")
+print(metrics_2)
+```
+
+\
+Fit null model.
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Fit null model
+nullfit <- lin_mod %>% fit(Y ~ 1, data = train_data)
+```
+
+\
+Compute RMSE and R-squared scores for null model.
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold', warning=FALSE}
+# Compute the RMSE and R squared for the null model
+metrics_null <- nullfit %>%
+  predict(train_data) %>%
+  bind_cols(train_data) %>%
+  metrics(truth = Y, estimate = .pred)
+
+# Print the results for the null model
+cat("Null Model\n")
+print(metrics_null)
+```
+
+\
+
+## Resampling Model Assessment
+
+\
+
+Load required libraries, and set seed for reproducability.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Load required libraries
+library(tidymodels)
+library(dplyr)
+
+# Set the seed for reproducibility
+set.seed(rngseed) 
+```
+
+\
+Create CV folds.
+We are using a 10-fold cross-validation.
+
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+# Create CV Folds 
+cv_folds <- vfold_cv(train_data, v = 10, strata = NULL) 
+```
+
+\
+Creating workflows for DOSE and all predictors models.
+
+
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+# Creating workflows
+
+# DOSE model
+workflow_dose <- workflow() %>%
+  add_model(lin_mod) %>%
+  add_formula(Y ~ DOSE)
+
+# All predictors model
+workflow_all <- workflow() %>%
+  add_model(lin_mod) %>%
+  add_formula(Y ~ .)
+```
+
+\
+Fitting the models with resampling, and calculating RMSE and R-squared values.
+
+
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+# DOSE model
+cv_results_dose <- fit_resamples(
+  workflow_dose,
+  cv_folds,
+  metrics = metric_set(rmse, rsq)
+)
+
+# All predictors model
+cv_results_all <- fit_resamples(
+  workflow_all,
+  cv_folds,
+  metrics = metric_set(rmse, rsq)
+)
+```
+
+\
+Summarizing model results.
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+# Summarize model results
+cat("DOSE Model with Resampling\n")
+collect_metrics(cv_results_dose)
+cat("\n")
+cat("All Predictors Model with Resampling\n")
+collect_metrics(cv_results_all)
+```
+
+\
+
+## Comparing Results
+
+#### Dose Models
+
+As can be seen in the charts below, the model with resampling is a slightly better fit than the model without.
+The RMSE of the model with resampling (691) is lower than the RMSE of the model without resampling (703), indicating a better fit. 
+The R-squared of the model with resampling (0.512) is slightly higher than the model without resampling (.451), indicating a better fit.
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+cat("DOSE Model with Resampling\n")
+collect_metrics(cv_results_dose)
+cat("\n")
+cat("DOSE Model\n")
+print(metrics_1)
+```
+
+\
+
+#### All Predictors Models
+
+As can be seen in the charts below, the model with resampling is a slightly better fit than the model without, but not as good an improvement as with the DOSE models. 
+The RMSE of the model with resampling (646) is actually higher than the RMSE of the model without resampling (627), suggesting a slight increase in prediction errors with the resampling model. 
+The R-squared of the model with resampling (0.573) is slightly higher than the model without resampling (0.562), indicating a better fit. Though this increase is not as notable as the one seen with the DOSE models. 
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+cat("All Predictors Model with Resampling\n")
+collect_metrics(cv_results_all)
+cat("\n")
+cat("All Predictors Model\n")
+print(metrics_2)
+```
+
+\
+
+## Using a New Seed
+This follows the same steps as above, but with a new random seed of 042.
+\
+Setting seed for reproducability, and creating CV folds. 
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+# Set the seed for reproducibility
+set.seed(42) 
+
+# Create CV Folds 
+cv_folds <- vfold_cv(train_data, v = 10, strata = NULL) 
+```
+
+\
+Creating workflows for DOSE and all predictors models.
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+# DOSE model
+workflow_dose <- workflow() %>%
+  add_model(lin_mod) %>%
+  add_formula(Y ~ DOSE)
+
+# All predictors model
+workflow_all <- workflow() %>%
+  add_model(lin_mod) %>%
+  add_formula(Y ~ .)
+```
+
+\
+Fitting the models with resampling, and calculating RMSE and R-squared values.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+# DOSE model
+cv_results_dose <- fit_resamples(
+  workflow_dose,
+  cv_folds,
+  metrics = metric_set(rmse, rsq)
+)
+
+# All predictors model
+cv_results_all <- fit_resamples(
+  workflow_all,
+  cv_folds,
+  metrics = metric_set(rmse, rsq)
+)
+```
+
+\
+Summarizing model results.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+# Summarize model results
+cat("(New Seed) DOSE Model with Resampling\n")
+collect_metrics(cv_results_dose)
+cat("(New Seed) All Predictors Model with Resampling\n")
+collect_metrics(cv_results_all)
+```
+
+\
+
+## Comparing Results (Again)
+
+#### Dose Models
+
+As can be seen in the charts below, the model with resampling is a slightly better fit than the model without.
+The RMSE of the model with resampling (696) is lower than the RMSE of the model without resampling (703), indicating a better fit. 
+The R-squared of the model with resampling (0.461) is slightly higher than the model without resampling (.451), indicating a better fit.
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+cat("(New Seed) DOSE Model with Resampling\n")
+collect_metrics(cv_results_dose)
+cat("\n")
+cat("DOSE Predictors Model\n")
+print(metrics_1)
+```
+
+\
+
+#### All Predictors Models
+
+As can be seen in the charts below, the model with resampling is not overall a much better fit than without resampling. 
+The RMSE of the model with resampling (642) is actually higher than the RMSE of the model without resampling (627), suggesting a slight increase in prediction errors with the resampling model. 
+The R-squared of the model with resampling (0.507) is slightly lower than the model without resampling (0.562), indicating a similar or worse fit.
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold'}
+cat("All Predictors Model with Resampling\n")
+collect_metrics(cv_results_all)
+cat("\n")
+cat("All Predictors Model\n")
+print(metrics_2)
+```
+
+\
+
+#### Thoughts
+Both runs of the resampling followed a similar pattern when run even with different random seeds. The DOSE models showed a better fit with resampling, while the all predictors models showed little to no indication of a better fit. 
+
+---
+
