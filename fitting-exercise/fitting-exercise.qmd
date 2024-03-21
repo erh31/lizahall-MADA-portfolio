@@ -823,3 +823,112 @@ Both runs of the resampling followed a similar pattern when run even with differ
 
 ---
 
+
+## This section added by Ranni Tewfik.
+
+
+First let's create a figure that plots observed values versus predicted values for the three original model fits to all of the training data.
+
+
+```{r}
+#Compute the predicted values for the three models
+predicted1 <- predict(linfit1, new_data = train_data)
+predicted2 <- predict(linfit2, new_data = train_data)
+predictednull <- predict(nullfit, new_data = train_data)
+
+#Create a data frame with the observed values and predicted values from the three models
+predictions <- data.frame(
+  observed = train_data$Y,
+  model1 = predicted1,
+  model2 = predicted2,
+  null = predictednull)
+
+#Create a figure that plots observed values on the x-axis and predicted values on the y-axis
+ggplot(predictions, aes(x = observed)) +
+  geom_point(aes(y = .pred, color = "Model 1"), alpha = 0.7) +
+  geom_point(aes(y = .pred.1, color = "Model 2"), alpha = 0.7) +
+  geom_point(aes(y = .pred.2, color = "Null Model"), alpha = 0.7) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black") +
+  xlim(0, 5000) +
+  ylim(0, 5000) +
+  labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values for Three Models") +
+  theme_minimal()
+```
+
+
+As expected, the predicted values from the null model are a straight horizontal line because the same value (mean) is predicted for each observation. For Model 1 with only DOSE as the predictor, the data fall along three horizontal lines (i.e., only three different predicted values for the outcome) because the DOSE variable takes only three values. Model 2 with all predictors looks the best because the points fall relatively along the dashed diagonal line (i.e., observed and predicted values generally agree), although there is some scatter along the diagonal line. There seems to be a pattern to the scatter, as the predicted values are lower than the observed values for high values. Perhaps there are aspects of the outcome pattern that the model cannot explain.
+
+
+Now let's create a figure that plots predicted values versus residuals for Model 2.
+
+
+```{r}
+#Fit the linear model for all predictors and create a data frame
+linmodel2 <- lm(Y ~ ., data = train_data)
+linmodel2f <- fortify(linmodel2)
+
+#Create a figure that plots predicted values on the x-axis and residuals on the y-axis
+ggplot(linmodel2f, aes(x = .fitted, y = .resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  ylim(-2500, 2500) +
+  labs(x = "Predicted Values", y = "Residuals", title = "Predicted Values vs. Residuals for Model 2") +
+  theme_minimal()
+```
+
+
+There is a discernible pattern in the plot of predicted values versus residuals, as there are more and higher negative values of residuals compared to positive values. It may be that more variables are needed (i.e., important information is missing) or that the model is too simple (i.e., the outcome depends on some variable in a nonlinear relationship).
+
+
+Finally, let's use the bootstrap method to sample the data, fit Model 2 to the data, and measure uncertainty in our predictions. Let's create a figure that plots observed versus predicted values for Model 2.
+
+
+```{r}
+#Load the required package
+library(rsample)
+library(boot)
+
+#Set a seed
+rngseed = 1234
+set.seed(rngseed)
+
+#Create 100 bootstraps using the training data
+dat_bs <- bootstraps(train_data, times = 100)
+
+#Create an empty matrix to store predictions
+pred_bs <- matrix(nrow = nrow(train_data), ncol = 100)
+
+#Use a loop to fit Model 2 to each bootstrap sample and make predictions for the training data
+for(i in 1:100) {
+  dat_sample <- analysis(dat_bs$splits[[i]])
+  model <- lm(Y ~ ., data = dat_sample)
+  predictions <- predict(model, newdata = train_data)
+  pred_bs[, i] <- predictions
+}
+
+#Compute the median and 89% confidence intervals
+preds <- apply(pred_bs, 1, function(x) {quantile(x, c(0.055, 0.5, 0.945))}) %>% t()
+preds <- data.frame(preds)
+
+#Add the median and confidence intervals to the same data frame as the observed and predicted values for Model 2
+linmodel2f$lower <- preds$X5.5.
+linmodel2f$median <- preds$X50.
+linmodel2f$upper <- preds$X94.5.
+
+#Create a figure that plots observed values on the x-axis and predicted values on the y-axis
+ggplot(linmodel2f, aes(x = Y)) +
+  geom_point(aes(y = .fitted, color = "Point Estimates"), alpha = 0.7) +
+  geom_point(aes(y = lower, color = "Lower Bounds"), alpha = 0.7) +
+  geom_point(aes(y = median, color = "Medians"), alpha = 0.7) +
+  geom_point(aes(y = upper, color = "Upper Bounds"), alpha = 0.7) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black") +
+  xlim(0, 5000) +
+  ylim(0, 5000) +
+  labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values for Model 2") +
+  theme_minimal()
+```
+
+
+In general, the medians and confidence intervals in the plot follow the same diagonal pattern as the point estimates (i.e., observed and predicted values generally agree), although there is some scatter along the diagonal line. Because some predicted values are lower than the observed values for high values, there may be aspects of the outcome that the model cannot explain.
+
+
