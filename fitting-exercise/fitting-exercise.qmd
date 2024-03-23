@@ -4,11 +4,11 @@ author: "Elizabeth Hall"
 output: html_document
 ---
 
-# Exercise 8
+## Exercise 8
 
 ---
 
-## Importing Data  
+### Importing Data  
 
 \
 The first step was to import and read the data from the csv file.
@@ -64,7 +64,7 @@ ggplot(data, aes(x = TIME, y = DV, group = ID, color = as.factor(DOSE))) +
 \
 \
 
-## Data Processing
+### Data Processing
 
 Loading in dplyr for data manipulation.
 
@@ -130,7 +130,7 @@ selected_data <- combined_data %>%
 \
 \
 
-## Exploratory Data Analysis
+### Exploratory Data Analysis
 
 Loading in packages for data exploration and visualization.
 
@@ -259,7 +259,7 @@ corrplot(corr_matrix, method = "color", col = my_colors,
 \
 \
 
-## Model Fitting
+### Model Fitting
 
 Loading in tidymodels for model fitting.
 
@@ -271,7 +271,7 @@ library(tidymodels)
 
 \
 
-#### Linear Models
+##### Linear Models
 
 Models were fitted to the continuous outcome 'Y'.\
 
@@ -344,7 +344,7 @@ The lower RMSE and MAE values for the all predictors model compared to the 'DOSE
 The higher R-squared value for the all predictors model suggests that it does a better job in explaining variance in the data.\
 \
 
-#### Logistic Models
+##### Logistic Models
 
 Models were fitted to the categorical/binary outcome 'SEX'.\
 Defining the logistic model specification.
@@ -413,7 +413,7 @@ However, including all predictors marginally improves both the RMSE and R-square
 \
 \
 
-## K-Nearest Neighbor
+### K-Nearest Neighbor
 
 Loading in kknn for nearest neighbor.
 
@@ -507,9 +507,9 @@ print(metrics_SEX_all)
 
 ---
 
-# Exercise 10
+## Exercise 10
 
-## Setup
+### Setup
 
 Load nessecary libraries and assign random seed value. 
 
@@ -534,7 +534,7 @@ set.seed(rngseed)
 
 \
 
-#### Data Splitting
+##### Data Splitting
 
 Split data into training data and test data. 
 Data is split at a 3 to 4 ratio, with 75 training data and .25 test data.
@@ -550,10 +550,7 @@ test_data  <- testing(data_split)
 
 \
 
-## Model Fitting
-
-\
-
+### Model Fitting
 Load required libraries and set seed for reproducability.
 ```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Load required libraries
@@ -620,9 +617,7 @@ print(metrics_null)
 
 \
 
-## Resampling Model Assessment
-
-\
+### Resampling Model Assessment
 
 Load required libraries, and set seed for reproducability.
 
@@ -696,9 +691,9 @@ collect_metrics(cv_results_all)
 
 \
 
-## Comparing Results
+### Comparing Results
 
-#### Dose Models
+##### Dose Models
 
 As can be seen in the charts below, the model with resampling is a slightly better fit than the model without.
 The RMSE of the model with resampling (691) is lower than the RMSE of the model without resampling (703), indicating a better fit. 
@@ -713,7 +708,7 @@ print(metrics_1)
 
 \
 
-#### All Predictors Models
+##### All Predictors Models
 
 As can be seen in the charts below, the model with resampling is a slightly better fit than the model without, but not as good an improvement as with the DOSE models. 
 The RMSE of the model with resampling (646) is actually higher than the RMSE of the model without resampling (627), suggesting a slight increase in prediction errors with the resampling model. 
@@ -728,7 +723,7 @@ print(metrics_2)
 
 \
 
-## Using a New Seed
+### Using a New Seed
 This follows the same steps as above, but with a new random seed of 042.
 \
 Setting seed for reproducability, and creating CV folds. 
@@ -786,9 +781,9 @@ collect_metrics(cv_results_all)
 
 \
 
-## Comparing Results (Again)
+### Comparing Results (Again)
 
-#### Dose Models
+##### Dose Models
 
 As can be seen in the charts below, the model with resampling is a slightly better fit than the model without.
 The RMSE of the model with resampling (696) is lower than the RMSE of the model without resampling (703), indicating a better fit. 
@@ -803,7 +798,7 @@ print(metrics_1)
 
 \
 
-#### All Predictors Models
+##### All Predictors Models
 
 As can be seen in the charts below, the model with resampling is not overall a much better fit than without resampling. 
 The RMSE of the model with resampling (642) is actually higher than the RMSE of the model without resampling (627), suggesting a slight increase in prediction errors with the resampling model. 
@@ -818,19 +813,20 @@ print(metrics_2)
 
 \
 
-#### Thoughts
+##### Thoughts
 Both runs of the resampling followed a similar pattern when run even with different random seeds. The DOSE models showed a better fit with resampling, while the all predictors models showed little to no indication of a better fit. 
 
 ---
 
+---
 
-## This section added by Ranni Tewfik.
+### This section added by Ranni Tewfik.
 
 
 First let's create a figure that plots observed values versus predicted values for the three original model fits to all of the training data.
 
 
-```{r}
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold', warning=FALSE}
 #Compute the predicted values for the three models
 predicted1 <- predict(linfit1, new_data = train_data)
 predicted2 <- predict(linfit2, new_data = train_data)
@@ -862,7 +858,7 @@ As expected, the predicted values from the null model are a straight horizontal 
 Now let's create a figure that plots predicted values versus residuals for Model 2.
 
 
-```{r}
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold', warning=FALSE}
 #Fit the linear model for all predictors and create a data frame
 linmodel2 <- lm(Y ~ ., data = train_data)
 linmodel2f <- fortify(linmodel2)
@@ -883,7 +879,7 @@ There is a discernible pattern in the plot of predicted values versus residuals,
 Finally, let's use the bootstrap method to sample the data, fit Model 2 to the data, and measure uncertainty in our predictions. Let's create a figure that plots observed versus predicted values for Model 2.
 
 
-```{r}
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold', warning=FALSE}
 #Load the required package
 library(rsample)
 library(boot)
@@ -931,4 +927,71 @@ ggplot(linmodel2f, aes(x = Y)) +
 
 In general, the medians and confidence intervals in the plot follow the same diagonal pattern as the point estimates (i.e., observed and predicted values generally agree), although there is some scatter along the diagonal line. Because some predicted values are lower than the observed values for high values, there may be aspects of the outcome that the model cannot explain.
 
+---
 
+---
+
+\
+
+### Final Evaluation
+
+Gathering predictions for testing and training data. 
+
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold', warning=FALSE}
+# Predictions for the training data
+predictions_train <- predict(linfit2, new_data = train_data) %>%
+  bind_cols(train_data) %>%
+  mutate(dataset = "Training")
+
+# Predictions for the test data
+predictions_test <- predict(linfit2, new_data = test_data) %>%
+  bind_cols(test_data) %>%
+  mutate(dataset = "Test")
+```
+
+\
+Combining predictions in to one data frame for plotting purposes.
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold', warning=FALSE}
+# Combine the predictions into one data frame
+predictions_combined <- bind_rows(predictions_train, predictions_test)
+```
+
+\
+Plotting the graph using ggplot.
+
+```{r, echo=TRUE, message=FALSE, background='lightgray', results='hold', warning=FALSE}
+# Creating the plot
+ggplot(predictions_combined, aes(x = Y, y = .pred)) +
+  geom_point(aes(shape = dataset, color = dataset), alpha = 0.7, size = 3) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "grey40", size = 1) +
+  scale_shape_manual(values = c("Training" = 16, "Test" = 17)) + # Circle and triangle
+  scale_color_manual(values = c("Training" = "#ffcd00", "Test" = "#5c88da")) +
+  labs(x = "Observed Values",
+       y = "Predicted Values",
+       title = "Comparison of Observed vs. Predicted Values",
+       subtitle = "Includes both Training and Test Data") +
+  theme_minimal(base_size = 14) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom",
+        plot.title = element_text(size = 20, face = "bold"),
+        plot.subtitle = element_text(size = 16),
+        axis.title.x = element_text(size = 16, face = "bold"),
+        axis.title.y = element_text(size = 16, face = "bold"),
+        legend.text = element_text(size = 14)) +
+  guides(color = guide_legend(override.aes = list(size = 6)))
+```
+
+\
+
+##### Overall Model Assessment
+
+Both model 1 and model 2 performed better than the null model, which was expected to be the case. 
+
+
+The DOSE model, while not much better than the null model, technically does improve results over the null model. I think the results of the DOSE model do make sense given there being only one predictor and thus limited observation of complexity within the data, however, I would not consider this model usable for any real purposes.
+
+
+Model 2 (all predictors model) does further improve results. The results here also make sense, as now there are many more predictors, which allow the model to capture more complexity and variance within the data. I would consider this model usable (depending on the application), though there is certainly room for improvement and further adjustment. 
+
+
+---
