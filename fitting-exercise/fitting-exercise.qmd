@@ -125,7 +125,19 @@ combined_data <- combined_data %>%
 # Select only the desired variables
 selected_data <- combined_data %>%
   select(Y, DOSE, AGE, SEX, RACE, WT, HT)
+
 ```
+
+\
+Saving 'selected_data' to RDs file for use in module 11 exercise 
+
+```{r, echo=TRUE, message=FALSE, background='lightgray'}
+
+# Save cleaned data to RDs file for use in Exercise 11
+RDSfilepath <- here("ml-models-exercise", "cleandata.rds")
+write_rds(selected_data, RDSfilepath)
+```
+
 
 \
 \

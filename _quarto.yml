@@ -22,6 +22,8 @@ website:
             file: presentation-exercise/presentation-exercise.qmd
           - text: "Fitting Exercise"
             file: fitting-exercise/fitting-exercise.qmd
+          - text: "ML-Models Exercise"
+            file: ml-models-exercise/ml-models-exercise.qmd
           - text: "Tidy Tuesday Exercise"
             file: tidytuesday-exercise/tidytuesday-exercise.qmd
     right:
