@@ -1,20 +1,5 @@
----
-title: "Tidy Tuesday Exercise"
-author: "Elizabeth Hall"
-output: html_document
----
+# == [0] SETUP AND CLEANING =====================================
 
-## Exercise 13
-
----
-
-### Setup and Cleaning
-
-\
-
-First, the required libraries were loaded.
-
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Load required libraries
 library(tidytuesdayR)
 library(tidyverse)
@@ -22,13 +7,7 @@ library(jsonlite)
 library(janitor)
 library(here)
 library(fs)
-```
 
-\
-
-Then the data was loaded in and seperated.
-
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Load data (code from tinytuesday github)
 tuesdata <- tidytuesdayR::tt_load('2024-04-09')
 
@@ -37,13 +16,7 @@ eclipse_annular_2023 <- tuesdata$eclipse_annular_2023
 eclipse_total_2024 <- tuesdata$eclipse_total_2024
 eclipse_partial_2023 <- tuesdata$eclipse_partial_2023
 eclipse_partial_2024 <- tuesdata$eclipse_partial_2024
-```
 
-\
-
-The code was then cleaned using the cleaning script provided with the data.
-
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Initial cleaning script (code from tinytuesday github)
 working_dir <- here::here("tidytuesday-exercise", "eclipse-data")
 
@@ -91,27 +64,16 @@ readr::write_csv(
   eclipse_partial_2023,
   fs::path(working_dir, "eclipse_partial_2023.csv")
 )
-```
 
-\
 
-### Exploratory Data Analysis
+# == [1] EXPLORATORY DATA ANALYSIS ===============================
 
-\
-
-First, the required libraries were loaded.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Load required libraries
 library(patchwork)
 library(cowplot)
 library(ggplot2)
 library(maps)
-```
 
-\
-
-Print summary statistics and counts of observation by state.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Print summary statistics
 summary(eclipse_total_2024)
 summary(eclipse_partial_2024)
@@ -121,11 +83,7 @@ summary(eclipse_partial_2023)
 # Count of observations by state
 eclipse_total_2024 %>% count(state) %>% arrange(desc(n))
 eclipse_partial_2024 %>% count(state) %>% arrange(desc(n))
-```
 
-\
-Generate map visualizations.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Load required data
 world_map <- map_data("world")
 
@@ -172,19 +130,14 @@ combined_plot <- (plot_annular_2023 +
 
 # Display the combined plot
 combined_plot
-```
 
 
-### Question
+# == [2] QUESTION/HYPOTHESIS ====================================
 
-Is it possible to predict the duration of an eclipse at any location based on its geographical position and the eclipse type?
+# Is it possible to predict the duration of an eclipse at any location based on its geographical position and the eclipse type?
 
-\
+# == [3] PRE-PROCESSING =========================================
 
-### Pre-Processing
-
-Loading required libraries.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Load required libraries
 library(tidymodels)
 library(yardstick)
@@ -194,11 +147,7 @@ library(glmnet)
 library(ranger)
 library(dplyr)
 library(dials)
-```
 
-\
-Processing data for modeling and calculating total duration.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Prepare the data for modeling
 eclipse_data <- bind_rows(
   mutate(eclipse_annular_2023, eclipse_type = "annular"),
@@ -218,11 +167,6 @@ for (i in 1:6) {
 
 # Calculate total duration
 eclipse_data$total_duration <- eclipse_data$eclipse_6 - eclipse_data$eclipse_1
-```
-
-\
-Creating a data split and recipie for model fitting.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 
 # Separate the data into features and target variable
 features <- eclipse_data %>%
@@ -240,15 +184,9 @@ eclipse_recipe <- recipe(total_duration ~ lat + lon + eclipse_type, data = train
   step_dummy(all_nominal(), -all_outcomes()) %>%
   step_center(all_predictors(), -all_outcomes()) %>%
   step_scale(all_predictors(), -all_outcomes())
-```
 
+# == [4] MODEL FITTING ===========================================
 
-\
-
-### Model Fitting
-
-Defining model specifications.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Define model specifications...
 
 # LASSO model
@@ -265,11 +203,8 @@ rf_spec <- rand_forest(trees = 300, mtry = tune(), min_n = tune()) %>%
 boost_spec <- boost_tree(trees = tune(), tree_depth = tune(), min_n = tune(), learn_rate = tune()) %>%
   set_engine("xgboost") %>%
   set_mode("regression")
-```
 
-\
-Creating workflows.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
+
 # Bundle the recipe and model specs into workflows...
 
 # LASSO model
@@ -286,19 +221,13 @@ rf_workflow <- workflow() %>%
 boost_workflow <- workflow() %>%
   add_recipe(eclipse_recipe) %>%
   add_model(boost_spec)
-```
 
-\
-Setting up cross-validation.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
+
 # Setup for cross-validation
 set.seed(042) # for reproducibility
 cv_folds <- vfold_cv(train_data, v = 5, repeats = 3)
-```
 
-\
-Fitting the LASSO model.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
+
 # -- [4a] LASSO Model ----------
 
 # Set up a grid for the LASSO model
@@ -327,11 +256,8 @@ lasso_fit_final <- workflow() %>%
   add_recipe(eclipse_recipe) %>%
   add_model(lasso_spec_final) %>%
   fit(data = train_data)
-```
 
-\
-Fitting the Random Forest model.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
+
 # -- [4b] Random Forest Model ----------
 
 # Create a tuning grid
@@ -362,11 +288,8 @@ rf_fit_final <- workflow() %>%
   add_recipe(eclipse_recipe) %>%
   add_model(rf_spec_final) %>%
   fit(data = train_data)
-```
 
-\
-Fitting the Boosted Tree model.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
+
 # -- [4c] Boosted Trees Model ----------
 
 # Define the parameters
@@ -404,21 +327,13 @@ boost_fit_final <- workflow() %>%
   add_recipe(eclipse_recipe) %>%
   add_model(boost_spec_final) %>%
   fit(data = train_data)
-```
 
-\
 
-### Model Evaluation
+# == [5/6] MODEL EVALUATION =====================================
 
-Loading required libraries.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Load required libraries
 library(knitr)
-```
 
-\
-Creating model evaluation functions.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Function to generate predictions ensuring consistent column naming
 make_predictions <- function(model_fit, new_data) {
   predictions <- predict(model_fit, new_data)
@@ -457,11 +372,7 @@ evaluate_model <- function(predictions, actual_data, outcome_var) {
     Residuals_Plot = residuals_plot
   )
 }
-```
 
-\
-Evaluating models.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Evaluate models
 predictions_lasso <- make_predictions(lasso_fit_final, test_data)
 eval_lasso <- evaluate_model(predictions_lasso, test_data, total_duration)
@@ -471,42 +382,26 @@ eval_rf <- evaluate_model(predictions_rf, test_data, total_duration)
 
 predictions_boost <- make_predictions(boost_fit_final, test_data)
 eval_boost <- evaluate_model(predictions_boost, test_data, total_duration)
-```
 
-\
-Print LASSO model evaluation.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Print evaluation results for each model
 cat("LASSO Model Evaluation:\n")
 print(eval_lasso$Metrics)
 print(eval_lasso$RMSE)
 print(eval_lasso$R_Squared)
 eval_lasso$Residuals_Plot
-```
 
-\
-Print Random Forest model evaluation.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 cat("\nRandom Forest Model Evaluation:\n")
 print(eval_rf$Metrics)
 print(eval_rf$RMSE)
 print(eval_rf$R_Squared)
 eval_rf$Residuals_Plot
-```
 
-\
-Print Boosted Tree model evaluation.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 cat("\nBoosted Trees Model Evaluation:\n")
 print(eval_boost$Metrics)
 print(eval_boost$RMSE)
 print(eval_boost$R_Squared)
 eval_boost$Residuals_Plot
-```
 
-\
-Extract RMSE and R-Squared values.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Extract RMSE and R_Squared from the evaluation lists
 rmse_lasso <- eval_lasso$RMSE$.estimate
 rsq_lasso <- eval_lasso$R_Squared$.estimate
@@ -516,11 +411,7 @@ rsq_rf <- eval_rf$R_Squared$.estimate
 
 rmse_boost <- eval_boost$RMSE$.estimate
 rsq_boost <- eval_boost$R_Squared$.estimate
-```
 
-\
-Create summary table.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Create the summary table
 metrics_summary <- tibble(
   Model = c("LASSO", "Random Forest", "Boosted Trees"),
@@ -530,27 +421,18 @@ metrics_summary <- tibble(
 
 # Print a nicely formatted table for Markdown
 kable(metrics_summary, caption = "Comparison of Model Performance Metrics")
-```
 
-\
-#### Thoughts...
-The random forest model is the best choice out of the three. The RF model has the lowest RMSE score indicating a lower error rate, and a high R-squared value indicating that it explains the variation within the data. While it's residuals graph isn't perfect and still has some pattern to it, it is the most random of the three further indicating that it is the best choice.
+# The random forest model is the best choice out of the three. The RF model has the lowest RMSE score indicating a lower error rate, and a high R-squared value
+# indicating that it explains the variation within the data. While it's residuals graph isn't perfect and still has some pattern to it, it is the most random of
+# the three further indicating that it is the best choice.
 
-\
 
-### Findings
+# == [7] FINAL THOUGHTS =========================================
 
-\
-Printing summary table.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Print a nicely formatted table of model performance metrics
 cat("Model Performance Summary:\n")
 print(kable(metrics_summary, caption = "Comparison of Model Performance Metrics"))
-```
 
-\
-Generating map of predicted eclipse durations (RF model) vs actual eclipse durations.
-```{r, echo=TRUE, message=FALSE, background='lightgray'}
 # Generate predictions using the Random Forest model
 predictions <- predict(rf_fit_final, test_data)
 test_data$Predicted_Duration = predictions$.pred
@@ -573,8 +455,11 @@ ggplot() +
        x = "Longitude", y = "Latitude") +
   theme_minimal() +
   theme(legend.position = "right") 
-```
 
-#### Conclusion
+# The Random Forest model demonstrated the lowest RMSE and the highest R-squared among the tested models, indicating its strong predictive power.
 
-The Random Forest model demonstrated the lowest RMSE and the highest R-squared among the tested models, indicating its strong predictive power. Based on the map of actual vs predicted eclipse durations, the RF model seems to be able to predict eclipse duration based on geographic location. This indicates that the answer to the initial question "Is it possible to predict the duration of an eclipse at any location based on its geographical position and the eclipse type?" is yes. 
+# The RF model seems to be able to predict eclipse duration based on geographic location, which indicates that the answer to the initial question "Is it possible to predict the duration of an eclipse at any location based on its geographical position and the eclipse type?" is yes. 
+
+
+
+
